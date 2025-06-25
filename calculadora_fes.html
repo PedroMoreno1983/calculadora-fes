@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora FES - Educación Superior</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f4f8;
+            margin: 50px;
+            display: flex;
+            justify-content: center;
+        }
+        .calculator {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 400px;
+        }
+        input, button {
+            width: 100%;
+            padding: 8px;
+            margin-top: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .resultado {
+            margin-top: 15px;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+        .acciones {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="calculator">
+    <h2>Calculadora FES</h2>
+    <label for="duracion">Duración de la carrera (años):</label>
+    <input type="number" id="duracion" placeholder="Ejemplo: 5">
+
+    <label for="arancel">Arancel anual (en pesos):</label>
+    <input type="number" id="arancel" placeholder="Ejemplo: 3000000">
+
+    <label for="sueldo">Sueldo bruto mensual esperado (en pesos):</label>
+    <input type="number" id="sueldo" placeholder="Ejemplo: 800000">
+
+    <button onclick="calcularFES()">Calcular Cuota Mensual</button>
+
+    <div class="resultado" id="resultado"></div>
+
+    <div class="acciones">
+        <button onclick="descargarPDF()">Descargar PDF</button>
+        <button onclick="compartirCorreo()">Compartir por Correo</button>
+    </div>
+</div>
+
+<script>
+    function calcularFES() {
+        const duracion = parseInt(document.getElementById('duracion').value);
+        const arancel = parseFloat(document.getElementById('arancel').value);
+        const sueldo = parseFloat(document.getElementById('sueldo').value);
+
+        if (isNaN(duracion) || isNaN(arancel) || isNaN(sueldo) || duracion <= 0 || arancel <= 0 || sueldo <= 0) {
+            document.getElementById('resultado').innerText = 'Por favor, ingresa valores válidos y mayores que cero.';
+            return;
+        }
+
+        const deudaTotal = duracion * arancel;
+        const cuotaMensual = sueldo * 0.05;
+        const mesesParaPagar = deudaTotal / cuotaMensual;
+        const aniosParaPagar = mesesParaPagar / 12;
+        const superaLimite = aniosParaPagar > 20;
+
+        let mensaje = `Deuda Total: ${deudaTotal.toLocaleString('es-CL')} CLP\nCuota Mensual (5% sueldo): ${cuotaMensual.toLocaleString('es-CL')} CLP\nTiempo estimado de pago: ${Math.ceil(mesesParaPagar)} meses (~${aniosParaPagar.toFixed(1)} años)`;
+
+        if (superaLimite) {
+            mensaje += `\nAdvertencia: el tiempo estimado supera los 20 años. Según el FES, la deuda podría ser condonada después de ese período.`;
+        }
+
+        document.getElementById('resultado').innerHTML = mensaje.replace(/\n/g, '<br>');
+        window.resultadoTexto = mensaje; // guardar para exportar
+    }
+
+    function descargarPDF() {
+        const texto = window.resultadoTexto || '';
+        const blob = new Blob([texto], { type: 'application/pdf' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'resultado_fes.pdf';
+        link.click();
+    }
+
+    function compartirCorreo() {
+        const asunto = encodeURIComponent('Resultado de cálculo FES');
+        const cuerpo = encodeURIComponent(window.resultadoTexto || '');
+        window.location.href = `mailto:?subject=${asunto}&body=${cuerpo}`;
+    }
+</script>
+
+</body>
+</html>
